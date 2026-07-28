@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMZN Tailor - Premium Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Library Barcode & PDF (CDN yang Stabil) -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://cloudflare.com"></script>
+    
+    <!-- Supabase UMD Global Client (Wajib untuk GitHub Pages) -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <header>
+        <h1>SAMZN TAILOR</h1>
+        <p>Premium Digital Stitching Management System</p>
+    </header>
+
+    <div class="container">
+        <!-- SCREEN 1: LOGIN PEMILIK -->
+        <section id="login-sec" class="card" style="max-width: 450px; margin: 40px auto;">
+            <h2 style="text-align: center;">Login Pemilik</h2>
+            <div class="form-group">
+                <label>Nama Pemilik Tailor</label>
+                <input type="text" id="owner-name" placeholder="Contoh: Akib Djabar...">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="initApp()">Buka Dashboard</button>
+        </section>
+
+        <!-- SCREEN 2: DASHBOARD UTAMA -->
+        <section id="main-dash" class="hidden">
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <h3>Dashboard: <span id="display-user" style="color: var(--gold);"></span></h3>
+                <div class="nav-btns" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="showForm('atasan')">+ Order Atasan</button>
+                    <button class="btn btn-primary" onclick="showForm('bawahan')">+ Order Bawahan</button>
+                    <button class="btn btn-gold" onclick="bulkAction('nota')">🧾 Cetak Nota Pilihan</button>
+                    <button class="btn btn-outline" onclick="location.reload()">Keluar</button>
+                </div>
+            </div>
+
+            <!-- FORM INPUT DATA & UKURAN DINAMIS -->
+            <div id="order-form" class="card hidden">
+                <h2 id="form-title">Input Order</h2>
+                <div class="grid">
+                    <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="p-nama"></div>
+                    <div class="form-group"><label>Jenis Pakaian</label><input type="text" id="p-jenis" placeholder="Misal: Kemeja, Rok, Celana"></div>
+                    <div class="form-group"><label>Harga (Rp)</label><input type="number" id="p-harga"></div>
+                    <div class="form-group"><label>Tanggal Masuk</label><input type="date" id="p-masuk"></div>
+                    <div class="form-group"><label>Tanggal Jemput</label><input type="date" id="p-jemput"></div>
+                </div>
+
+                <!-- Kontainer Form Ukuran Dinamis (Muncul setelah klik lanjut) -->
+                <div id="ukuran-container" class="hidden" style="margin-top: 25px; padding-top: 20px; border-top: 2px solid var(--bg);">
+                    <h3 id="txt-tipe-ukuran" style="margin-bottom: 15px; color: var(--navy);">Detail Ukuran (cm)</h3>
+                    
+                    <!-- Form Spesifik Atasan -->
+                    <div id="form-atasan" class="grid hidden">
+                        <div class="form-group"><label>Lebar Bahu</label><input type="number" class="val-atasan" data-label="Lebar Bahu"></div>
+                        <div class="form-group"><label>Panjang Tangan</label><input type="number" class="val-atasan" data-label="Panjang Tangan"></div>
+                        <div class="form-group"><label>Lebar Tangan</label><input type="number" class="val-atasan" data-label="Lebar Tangan"></div>
+                        <div class="form-group"><label>Lebar Lengan</label><input type="number" class="val-atasan" data-label="Lebar Lengan"></div>
+                        <div class="form-group"><label>Panjang Baju</label><input type="number" class="val-atasan" data-label="Panjang Baju"></div>
+                        <div class="form-group"><label>Lebar Dada</label><input type="number" class="val-atasan" data-label="Lebar Dada"></div>
+                        <div class="form-group"><label>Lebar Pinggang</label><input type="number" class="val-atasan" data-label="Lebar Pinggang"></div>
+                    </div>
+
+                    <!-- Form Spesifik Bawahan -->
+                    <div id="form-bawahan" class="hidden">
+                        <div class="form-group" style="max-width: 300px; margin-bottom: 20px;">
+                            <label>Kategori Bawahan</label>
+                            <select id="select-bawahan" onchange="switchBawahanSubFields()">
+                                <option value="celana">Celana</option>
+                                <option value="rok">Rok</option>
+                            </select>
+                        </div>
+                        <!-- Inputs Celana -->
+                        <div id="field-celana" class="grid">
+                            <div class="form-group"><label>Lebar Pinggul</label><input type="number" class="val-celana" data-label="Lebar Pinggul"></div>
+                            <div class="form-group"><label>Lebar Pinggang</label><input type="number" class="val-celana" data-label="Lebar Pinggang"></div>
+                            <div class="form-group"><label>Panjang Kill</label><input type="number" class="val-celana" data-label="Panjang Kill"></div>
+                            <div class="form-group"><label>Panjang Celana</label><input type="number" class="val-celana" data-label="Panjang Celana"></div>
+                            <div class="form-group"><label>Lebar Kaki</label><input type="number" class="val-celana" data-label="Lebar Kaki"></div>
+                        </div>
+                        <!-- Inputs Rok -->
+                        <div id="field-rok" class="grid hidden">
+                            <div class="form-group"><label>Lebar Pinggang</label><input type="number" class="val-rok" data-label="Lebar Pinggang"></div>
+                            <div class="form-group"><label>Lebar Pinggul</label><input type="number" class="val-rok" data-label="Lebar Pinggul"></div>
+                            <div class="form-group"><label>Panjang Rok</label><input type="number" class="val-rok" data-label="Panjang Rok"></div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveToSupabaseCloud()" style="margin-top: 25px; width: 100%;">💾 Simpan Pesanan ke Cloud Database</button>
+                </div>
+                
+                <button id="btn-next" class="btn btn-gold" style="margin-top: 20px; width: 100%;" onclick="proceedToMeasureForm()">Lanjut Isi Ukuran Detail</button>
+            </div>
+
+            <!-- SIMULASI SCANNER BARCODE -->
+            <div class="card">
+                <h3>Simulasi Scanner / Pencarian Cepat</h3>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <input type="text" id="scan-id" placeholder="Masukkan ID Order (Contoh: SMZ-1234)">
+                    <button class="btn btn-primary" onclick="scanOrderAction('view')">Cek Ukuran</button>
+                    <button class="btn btn-gold" onclick="scanOrderAction('nota')">Print Nota PDF</button>
+                </div>
+            </div>
+
+            <!-- TABEL DATA DATABASE UTAMA -->
+            <div class="card" style="overflow-x: auto;">
+                <h2>Daftar Pesanan Jaitan (Live Cloud)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="check-all" onclick="toggleAllCheckboxes()"></th>
+                            <th>ID Order</th>
+                            <th>Pelanggan</th>
+                            <th>Jenis Jaitan</th>
+                            <th>Harga</th>
+                            <th>Tgl Jemput</th>
+                            <th>Barcode</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-list">
+                        <!-- Data live ter-render otomatis di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- WINDOW POP-UP: FILTER CENTANG UKURAN SEBELUM PRINT -->
+    <div id="modal-ukuran" class="hidden modal-overlay">
+        <div class="card modal-content">
+            <h3 id="modal-name">Pilih Komponen Ukuran yang Ingin Dicetak</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">*Centang atribut jaitan yang ingin dikeluarkan di kertas print.</p>
+            <div id="modal-checklist" class="grid-checks">
+                <!-- Checklist parameter terisi otomatis lewat Javascript -->
+            </div>
+            <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-outline" onclick="closeSizeModal()">Batal</button>
+                <button class="btn btn-primary" onclick="executePrintUkuranSelected()">🖨️ Cetak Ukuran Pilihan (PDF)</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 SAMZN TAILOR - Digital Cloud Management System</p>
+    </footer>
+
+    <!-- AREA STRUKTUR STRIP PRINT (HIDDEN DARI LAYAR UTAMA) -->
+    <div id="print-area" style="display: none;"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
